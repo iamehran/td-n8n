@@ -4,12 +4,14 @@
 :root {
   --background: #FAFAFA;
   --foreground: #1e1e1e;
-  --border: #d1d5db;
-  --border-dark: #9ca3af;
+  --border: #e5e7eb;
+  --border-dark: #d1d5db;
   --accent: #6366f1;
   --accent-light: #818cf8;
+  --accent-glow: rgba(99, 102, 241, 0.15);
   --success: #22c55e;
-  --muted: #6b7280;
+  --muted: #9ca3af;
+  --muted-dark: #6b7280;
 }
 
 @theme inline {
@@ -18,62 +20,101 @@
   --font-hand: 'Caveat', cursive;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Caveat', cursive;
   min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Hand-drawn border effect */
-.hand-border {
-  border: 2px solid var(--border-dark);
-  border-radius: 3px;
-  box-shadow:
-    1px 1px 0 var(--border),
-    2px 2px 0 var(--border);
+/* Responsive font scaling */
+@media (min-width: 640px) {
+  html { font-size: 18px; }
 }
 
-/* Sketchy checkbox */
+@media (min-width: 1024px) {
+  html { font-size: 20px; }
+}
+
+/* Sketchy checkbox - larger touch target for mobile */
 .checkbox-hand {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--foreground);
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border: 2.5px solid var(--foreground);
+  border-radius: 6px;
   cursor: pointer;
   position: relative;
   background: transparent;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .checkbox-hand {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+  }
 }
 
 .checkbox-hand:hover {
   border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.checkbox-hand:active {
+  transform: scale(0.95);
 }
 
 .checkbox-hand.checked {
   background: var(--accent);
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .checkbox-hand.checked::after {
   content: '';
   position: absolute;
-  left: 6px;
-  top: 2px;
-  width: 6px;
-  height: 12px;
+  left: 7px;
+  top: 3px;
+  width: 7px;
+  height: 13px;
   border: solid white;
   border-width: 0 3px 3px 0;
   transform: rotate(45deg);
 }
 
+@media (min-width: 640px) {
+  .checkbox-hand.checked::after {
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 12px;
+  }
+}
+
 /* Task item styling */
 .task-item {
   transition: all 0.2s ease;
+  border-radius: 12px;
 }
 
 .task-item:hover {
-  background: rgba(99, 102, 241, 0.05);
+  background: var(--accent-glow);
+}
+
+.task-item:active {
+  background: rgba(99, 102, 241, 0.1);
 }
 
 .task-completed .task-title {
@@ -84,17 +125,26 @@ body {
 /* Input styling */
 .input-hand {
   border: none;
-  border-bottom: 2px solid var(--border-dark);
+  border-bottom: 2.5px solid var(--border-dark);
   background: transparent;
   font-family: 'Caveat', cursive;
-  font-size: 1.5rem;
-  padding: 0.5rem 0;
+  font-size: 1.4rem;
+  padding: 0.75rem 0;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .input-hand {
+    font-size: 1.5rem;
+    padding: 0.5rem 0;
+  }
 }
 
 .input-hand:focus {
   border-bottom-color: var(--accent);
+  box-shadow: 0 2px 0 0 var(--accent-glow);
 }
 
 .input-hand::placeholder {
@@ -104,62 +154,149 @@ body {
 /* Button styling */
 .btn-hand {
   font-family: 'Caveat', cursive;
-  font-size: 1.25rem;
-  padding: 0.5rem 1.5rem;
-  border: 2px solid var(--foreground);
-  border-radius: 8px;
+  font-size: 1.2rem;
+  padding: 0.6rem 1.25rem;
+  border: 2.5px solid var(--foreground);
+  border-radius: 10px;
   background: transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .btn-hand {
+    font-size: 1.25rem;
+    padding: 0.5rem 1.5rem;
+  }
 }
 
 .btn-hand:hover {
   background: var(--foreground);
   color: var(--background);
+  transform: translateY(-1px);
+}
+
+.btn-hand:active {
+  transform: translateY(0);
 }
 
 .btn-hand.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: white;
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .btn-hand.primary:hover {
   background: var(--accent-light);
   border-color: var(--accent-light);
+  box-shadow: 0 4px 12px var(--accent-glow);
 }
 
 /* Enhanced title badge */
 .enhanced-badge {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--accent);
   font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* AI sparkle indicator */
+.ai-enhanced {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  background: var(--accent-glow);
+  border-radius: 20px;
+  margin-left: 0.5rem;
 }
 
 /* Subtle animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
+  from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 .fade-in {
   animation: fadeIn 0.3s ease;
 }
 
-/* Scrollbar styling */
+.slide-up {
+  animation: slideUp 0.4s ease;
+}
+
+/* Delete button */
+.delete-btn {
+  opacity: 0.4;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Safe area for mobile */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
+  background: var(--border-dark);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-dark);
+  background: var(--muted);
+}
+
+/* Remove default focus outline */
+:focus-visible {
+  outline: none;
+}
+
+input:focus,
+button:focus {
+  outline: none;
+}
+
+/* Loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, var(--border) 25%, var(--background) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

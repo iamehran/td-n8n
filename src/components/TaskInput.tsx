@@ -25,20 +25,21 @@ export default function TaskInput({ onAddTask, disabled }: TaskInputProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8">
-      <div className="flex gap-4 items-end">
+    <form onSubmit={handleSubmit} className="mb-6 sm:mb-8">
+      <div className="flex gap-3 sm:gap-4 items-end">
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="add a new task..."
-          className="input-hand flex-1 text-3xl"
+          className="input-hand flex-1 text-xl sm:text-2xl lg:text-3xl"
           disabled={disabled || loading}
+          autoComplete="off"
         />
         <button
           type="submit"
           disabled={disabled || loading || !title.trim()}
-          className="btn-hand primary text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-hand primary text-lg sm:text-xl lg:text-2xl disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
         >
           {loading ? '...' : 'add'}
         </button>

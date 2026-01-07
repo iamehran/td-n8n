@@ -43,23 +43,30 @@ export default function UserPrompt({ onUserSet }: UserPromptProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold mb-4">to-do</h1>
-          <p className="text-2xl text-gray-500">simple. minimal. yours.</p>
+    <div className="min-h-screen min-h-dvh flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-md slide-up">
+        {/* Logo/Title */}
+        <div className="text-center mb-10 sm:mb-12">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-2">to-do</h1>
+          <p className="text-xl sm:text-2xl text-[var(--accent)] font-medium">(but with AI)</p>
+          <p className="text-lg sm:text-xl text-[var(--muted)] mt-3">
+            simple. minimal. intelligent.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           <div>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your email..."
-              className="input-hand w-full text-2xl"
+              className="input-hand w-full text-xl sm:text-2xl"
               required
               disabled={loading}
+              autoComplete="email"
+              autoFocus
             />
           </div>
 
@@ -69,27 +76,34 @@ export default function UserPrompt({ onUserSet }: UserPromptProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="your name (optional)..."
-              className="input-hand w-full text-2xl"
+              className="input-hand w-full text-xl sm:text-2xl"
               disabled={loading}
+              autoComplete="name"
             />
           </div>
 
           {error && (
-            <p className="text-red-500 text-xl">{error}</p>
+            <p className="text-red-500 text-lg sm:text-xl fade-in">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading || !email.trim()}
-            className="btn-hand primary w-full text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-hand primary w-full text-xl sm:text-2xl py-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'loading...' : 'get started'}
           </button>
         </form>
 
-        <p className="text-center mt-8 text-xl text-gray-400">
-          your tasks sync via WhatsApp too!
-        </p>
+        {/* Feature hints */}
+        <div className="mt-10 sm:mt-12 space-y-3 text-center">
+          <p className="text-base sm:text-lg text-[var(--muted)]">
+            AI enhances your tasks automatically
+          </p>
+          <p className="text-base sm:text-lg text-[var(--muted)]">
+            works with WhatsApp too
+          </p>
+        </div>
       </div>
     </div>
   );

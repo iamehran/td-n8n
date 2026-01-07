@@ -58,19 +58,24 @@ export default function TaskItem({ task, onToggleComplete, onUpdateTitle, onDele
     }
   };
 
+  const displayTitle = task.enhanced_title || task.title;
+  const hasEnhancement = task.enhanced_title && task.enhanced_title !== task.title;
+
   return (
     <div
-      className={`task-item flex items-start gap-4 p-4 rounded-lg fade-in ${
+      className={`task-item flex items-start gap-3 sm:gap-4 p-3 sm:p-4 fade-in ${
         task.completed ? 'task-completed' : ''
       }`}
     >
+      {/* Checkbox */}
       <button
         onClick={handleToggle}
         disabled={loading}
-        className={`checkbox-hand flex-shrink-0 mt-1 ${task.completed ? 'checked' : ''}`}
+        className={`checkbox-hand flex-shrink-0 mt-0.5 ${task.completed ? 'checked' : ''}`}
         aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
       />
 
+      {/* Content */}
       <div className="flex-1 min-w-0">
         {editing ? (
           <input
@@ -79,33 +84,39 @@ export default function TaskItem({ task, onToggleComplete, onUpdateTitle, onDele
             onChange={(e) => setEditTitle(e.target.value)}
             onBlur={handleSaveEdit}
             onKeyDown={handleKeyDown}
-            className="input-hand w-full text-2xl"
+            className="input-hand w-full text-lg sm:text-xl lg:text-2xl"
             autoFocus
           />
         ) : (
           <div
             onClick={() => !task.completed && setEditing(true)}
-            className={`cursor-pointer ${!task.completed ? 'hover:text-indigo-600' : ''}`}
+            className={`cursor-pointer ${!task.completed ? 'active:opacity-70' : ''}`}
           >
-            <p className="task-title text-2xl break-words">
-              {task.enhanced_title || task.title}
+            <p className="task-title text-lg sm:text-xl lg:text-2xl break-words leading-relaxed">
+              {displayTitle}
+              {hasEnhancement && (
+                <span className="ai-enhanced ml-2 text-xs sm:text-sm">
+                  AI
+                </span>
+              )}
             </p>
-            {task.enhanced_title && task.enhanced_title !== task.title && (
-              <p className="enhanced-badge mt-1">
-                original: {task.title}
+            {hasEnhancement && (
+              <p className="text-sm sm:text-base text-[var(--muted)] mt-1 italic">
+                was: {task.title}
               </p>
             )}
           </div>
         )}
       </div>
 
+      {/* Delete button */}
       <button
         onClick={handleDelete}
         disabled={loading}
-        className="flex-shrink-0 text-2xl text-gray-400 hover:text-red-500 transition-colors p-2"
+        className="delete-btn flex-shrink-0 text-xl sm:text-2xl"
         aria-label="Delete task"
       >
-        x
+        ×
       </button>
     </div>
   );

@@ -23,25 +23,33 @@ export default function TaskList({
 
   if (loading) {
     return (
-      <div className="text-center py-12 text-2xl text-gray-400">
-        loading tasks...
+      <div className="py-8 sm:py-12 space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-4 p-4">
+            <div className="w-7 h-7 rounded-md loading-shimmer" />
+            <div className="flex-1 h-6 rounded loading-shimmer" />
+          </div>
+        ))}
       </div>
     );
   }
 
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-3xl text-gray-400 mb-2">no tasks yet</p>
-        <p className="text-xl text-gray-300">add one above or send via WhatsApp with #to-do</p>
+      <div className="text-center py-12 sm:py-16 slide-up">
+        <p className="text-2xl sm:text-3xl text-[var(--muted-dark)] mb-3">no tasks yet</p>
+        <p className="text-base sm:text-lg text-[var(--muted)]">
+          add one above to get started
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Active tasks */}
       {incompleteTasks.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-1 sm:space-y-2">
           {incompleteTasks.map((task) => (
             <TaskItem
               key={task.id}
@@ -54,12 +62,13 @@ export default function TaskList({
         </div>
       )}
 
+      {/* Completed tasks */}
       {completedTasks.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-xl text-gray-400 mb-4 border-b border-gray-200 pb-2">
+        <div className="mt-6 sm:mt-8">
+          <h3 className="text-base sm:text-lg text-[var(--muted)] mb-3 sm:mb-4 pb-2 border-b border-[var(--border)]">
             completed ({completedTasks.length})
           </h3>
-          <div className="space-y-2 opacity-60">
+          <div className="space-y-1 sm:space-y-2 opacity-70">
             {completedTasks.map((task) => (
               <TaskItem
                 key={task.id}

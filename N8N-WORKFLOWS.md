@@ -77,9 +77,15 @@ curl -X POST https://your-n8n.app.n8n.cloud/webhook/task-enhance \
 
 This workflow receives WhatsApp messages via Evolution API and creates tasks.
 
+### How It Works:
+1. User links their WhatsApp number in the web app (click "+ link WhatsApp")
+2. When they send a WhatsApp message containing `#to-do`, Evolution API forwards it to N8N
+3. N8N looks up the user by phone number and creates the task
+4. N8N sends a WhatsApp reply confirming the task was added
+
 ### Prerequisites:
-- Evolution API deployed and connected to WhatsApp
-- Webhook configured to point to N8N
+- Evolution API deployed and connected to YOUR WhatsApp
+- User has linked their phone in the web app
 
 ### Setup Steps:
 
@@ -89,6 +95,7 @@ This workflow receives WhatsApp messages via Evolution API and creates tasks.
    - Method: POST
    - Path: `/whatsapp-webhook`
    - Response Mode: "Respond to Webhook"
+   - Copy the Production URL (e.g., `https://your-n8n.app.n8n.cloud/webhook/whatsapp-webhook`)
 
 3. **Add IF Node (Filter #to-do)**
    - Conditions:
@@ -99,44 +106,44 @@ This workflow receives WhatsApp messages via Evolution API and creates tasks.
 4. **Add Code Node (Extract Task)** - True branch
    ```javascript
    const message = $input.first().json.data.message.conversation || '';
-   const phoneNumber = $input.first().json.data.key.remoteJid || '';
+   const remoteJid = $input.first().json.data.key.remoteJid || '';
+
+   // Extract phone number (remove @s.whatsapp.net suffix)
+   const phone = remoteJid.replace('@s.whatsapp.net', '');
 
    // Remove #to-do and clean up the task
    const task = message
      .replace(/#to-?do/gi, '')
      .trim();
 
-   // Use phone number as email identifier
-   const email = phoneNumber.replace('@s.whatsapp.net', '') + '@whatsapp.user';
-
    return {
      task,
-     email,
-     phoneNumber,
+     phone,
+     remoteJid,
      originalMessage: message
    };
    ```
 
-5. **Add OpenAI Node (Enhance Task)**
-   - Same config as Workflow 1
-
-6. **Add HTTP Request Node (Create Task)**
+5. **Add HTTP Request Node (Create Task)**
    - Method: POST
-   - URL: `https://your-app.vercel.app/api/webhook/n8n`
+   - URL: `https://td-n8n.vercel.app/api/webhook/n8n`
    - Headers:
      - Content-Type: application/json
-     - x-webhook-secret: your-webhook-secret (optional)
    - Body (JSON):
      ```json
      {
        "action": "create_task",
-       "user_email": "{{ $('Code').item.json.email }}",
-       "title": "{{ $('Code').item.json.task }}",
-       "enhanced_title": "{{ $json.message.content }}"
+       "user_phone": "{{ $('Code').item.json.phone }}",
+       "title": "{{ $('Code').item.json.task }}"
      }
      ```
 
-7. **Add HTTP Request Node (Send WhatsApp Reply)**
+6. **Add IF Node (Check Success)**
+   - Conditions:
+     - Boolean: `{{ $json.success }}`
+     - Operation: is true
+
+7. **Add HTTP Request Node (Send Success Reply)** - True branch
    - Method: POST
    - URL: `https://your-evolution-api.com/message/sendText/your-instance`
    - Headers:
@@ -145,22 +152,37 @@ This workflow receives WhatsApp messages via Evolution API and creates tasks.
    - Body (JSON):
      ```json
      {
-       "number": "{{ $('Code').item.json.phoneNumber }}",
-       "text": "✅ Task added!\n\n{{ $json.message.content }}\n\nView at: https://your-app.vercel.app"
+       "number": "{{ $('Code').item.json.remoteJid }}",
+       "text": "Task added: {{ $('Code').item.json.task }}"
      }
      ```
 
-8. **Add Respond to Webhook Node**
+8. **Add HTTP Request Node (Send Error Reply)** - False branch
+   - Same URL/headers as above
+   - Body (JSON):
+     ```json
+     {
+       "number": "{{ $('Code').item.json.remoteJid }}",
+       "text": "Could not add task. Make sure your WhatsApp number is linked at td-n8n.vercel.app"
+     }
+     ```
+
+9. **Add Respond to Webhook Node**
    - Response Code: 200
 
 ### Evolution API Webhook Config:
-In your Evolution API settings, set the webhook URL to:
-```
-https://your-n8n.app.n8n.cloud/webhook/whatsapp-webhook
-```
 
-Events to enable:
-- MESSAGES_UPSERT
+In your Evolution API instance settings:
+
+1. Go to **Settings** > **Webhook**
+2. Set Global Webhook URL: `https://your-n8n.app.n8n.cloud/webhook/whatsapp-webhook`
+3. Enable event: **MESSAGES_UPSERT**
+4. Save
+
+### Test the Flow:
+1. Open your web app, click "+ link WhatsApp", enter your phone number (e.g., `923001234567`)
+2. Send a WhatsApp message to your connected Evolution API number: `#to-do buy groceries`
+3. You should receive a reply and see the task in your web app
 
 ---
 

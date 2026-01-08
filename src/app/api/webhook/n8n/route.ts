@@ -20,29 +20,53 @@ export async function POST(request: NextRequest) {
 
     switch (body.action) {
       case 'create_task': {
-        if (!body.user_email || !body.title) {
+        if ((!body.user_email && !body.user_phone) || !body.title) {
           return NextResponse.json<ApiResponse>({
             success: false,
-            error: 'user_email and title are required'
+            error: 'user_email or user_phone, and title are required'
           }, { status: 400 });
         }
 
-        // Get or create user by email
-        let { data: user } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', body.user_email.toLowerCase())
-          .single();
+        // Get user by email or phone
+        let user: { id: string } | null = null;
+
+        if (body.user_phone) {
+          // Format phone (digits only) for lookup
+          const phoneDigits = body.user_phone.replace(/\D/g, '');
+          const { data: phoneUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('phone', phoneDigits)
+            .single();
+          user = phoneUser;
+        }
+
+        if (!user && body.user_email) {
+          const { data: emailUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', body.user_email.toLowerCase())
+            .single();
+          user = emailUser;
+
+          if (!user) {
+            // Create new user with email
+            const { data: newUser, error: userError } = await supabase
+              .from('users')
+              .insert({ email: body.user_email.toLowerCase() })
+              .select('id')
+              .single();
+
+            if (userError) throw userError;
+            user = newUser;
+          }
+        }
 
         if (!user) {
-          const { data: newUser, error: userError } = await supabase
-            .from('users')
-            .insert({ email: body.user_email.toLowerCase() })
-            .select('id')
-            .single();
-
-          if (userError) throw userError;
-          user = newUser;
+          return NextResponse.json<ApiResponse>({
+            success: false,
+            error: 'User not found. Link your WhatsApp number in the web app first.'
+          }, { status: 404 });
         }
 
         // Create task

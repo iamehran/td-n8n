@@ -2,6 +2,7 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
+  phone: string | null;
   created_at: string;
 }
 
@@ -30,6 +31,7 @@ export interface UpdateTaskPayload {
 export interface WebhookPayload {
   action: 'create_task' | 'list_tasks' | 'complete_task' | 'update_enhanced_title';
   user_email?: string;
+  user_phone?: string;
   task_id?: string;
   title?: string;
   enhanced_title?: string;

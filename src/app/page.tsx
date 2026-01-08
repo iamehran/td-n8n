@@ -9,17 +9,23 @@ import { useTasks } from '@/hooks/useTasks';
 export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userPhone, setUserPhone] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(true);
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [savingPhone, setSavingPhone] = useState(false);
 
   const { tasks, loading, enhancingIds, addTask, toggleComplete, updateTitle, deleteTask } = useTasks(userId);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('todo_user_id');
     const storedEmail = localStorage.getItem('todo_user_email');
+    const storedPhone = localStorage.getItem('todo_user_phone');
 
     if (storedUserId && storedEmail) {
       setUserId(storedUserId);
       setUserEmail(storedEmail);
+      setUserPhone(storedPhone);
     }
     setInitializing(false);
   }, []);
@@ -32,9 +38,36 @@ export default function Home() {
   const handleLogout = useCallback(() => {
     localStorage.removeItem('todo_user_id');
     localStorage.removeItem('todo_user_email');
+    localStorage.removeItem('todo_user_phone');
     setUserId(null);
     setUserEmail(null);
+    setUserPhone(null);
   }, []);
+
+  const handleSavePhone = async () => {
+    if (!userId) return;
+    setSavingPhone(true);
+    try {
+      const res = await fetch('/api/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, phone: phoneInput.trim() || null }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const newPhone = data.data.phone;
+        setUserPhone(newPhone);
+        if (newPhone) {
+          localStorage.setItem('todo_user_phone', newPhone);
+        } else {
+          localStorage.removeItem('todo_user_phone');
+        }
+        setEditingPhone(false);
+      }
+    } finally {
+      setSavingPhone(false);
+    }
+  };
 
   if (initializing) {
     return (
@@ -69,6 +102,48 @@ export default function Home() {
             <p className="text-base sm:text-lg text-[var(--muted)] mt-2 truncate max-w-[200px] sm:max-w-none">
               {userEmail}
             </p>
+            {/* Phone linking */}
+            <div className="mt-2">
+              {editingPhone ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="tel"
+                    value={phoneInput}
+                    onChange={(e) => setPhoneInput(e.target.value)}
+                    placeholder="+1234567890"
+                    className="input-hand text-sm sm:text-base py-1 px-2 w-32 sm:w-40"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSavePhone}
+                    disabled={savingPhone}
+                    className="btn-hand text-sm py-1 px-2"
+                  >
+                    {savingPhone ? '...' : 'save'}
+                  </button>
+                  <button
+                    onClick={() => setEditingPhone(false)}
+                    className="btn-hand text-sm py-1 px-2"
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : userPhone ? (
+                <button
+                  onClick={() => { setPhoneInput(userPhone); setEditingPhone(true); }}
+                  className="text-sm sm:text-base text-[var(--success)] hover:underline"
+                >
+                  WhatsApp linked
+                </button>
+              ) : (
+                <button
+                  onClick={() => { setPhoneInput(''); setEditingPhone(true); }}
+                  className="text-sm sm:text-base text-[var(--muted)] hover:text-[var(--accent)]"
+                >
+                  + link WhatsApp
+                </button>
+              )}
+            </div>
           </div>
           <button
             onClick={handleLogout}

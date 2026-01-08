@@ -7,6 +7,7 @@ export function useTasks(userId: string | null) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [enhancingIds, setEnhancingIds] = useState<Set<string>>(new Set());
 
   const fetchTasks = useCallback(async () => {
     if (!userId) {
@@ -56,11 +57,27 @@ export function useTasks(userId: string | null) {
       const newTask = data.data;
       setTasks((prev) => [newTask, ...prev]);
 
-      // Poll for AI enhancement (checks every 3 seconds, up to 5 times)
+      // Mark task as enhancing
+      setEnhancingIds((prev) => new Set(prev).add(newTask.id));
+
+      // Poll for AI enhancement (starts after 1.5s, checks every 2s, up to 8 times)
       pollForEnhancement(newTask.id, userId, (updatedTask) => {
         setTasks((prev) =>
           prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
         );
+        // Remove from enhancing state
+        setEnhancingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(newTask.id);
+          return next;
+        });
+      }, () => {
+        // On timeout, remove from enhancing state
+        setEnhancingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(newTask.id);
+          return next;
+        });
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create task');
@@ -146,6 +163,7 @@ export function useTasks(userId: string | null) {
     tasks,
     loading,
     error,
+    enhancingIds,
     addTask,
     toggleComplete,
     updateTitle,
@@ -155,18 +173,21 @@ export function useTasks(userId: string | null) {
 }
 
 // Poll for AI enhancement after task creation
-// Checks every 3 seconds, up to 5 times, stops early if enhanced_title is found
+// Starts after 1.5s, checks every 2s, up to 8 times (~17s total coverage)
 async function pollForEnhancement(
   taskId: string,
   userId: string,
-  onUpdate: (task: Task) => void
+  onUpdate: (task: Task) => void,
+  onTimeout?: () => void
 ) {
-  const maxAttempts = 5;
-  const interval = 3000; // 3 seconds
+  const maxAttempts = 8;
+  const interval = 2000; // 2 seconds
+  const initialDelay = 1500; // Start sooner
+
+  // Wait initial delay before first check
+  await new Promise((resolve) => setTimeout(resolve, initialDelay));
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    await new Promise((resolve) => setTimeout(resolve, interval));
-
     try {
       const res = await fetch(`/api/tasks?user_id=${userId}`);
       const data = await res.json();
@@ -181,5 +202,13 @@ async function pollForEnhancement(
     } catch {
       // Ignore polling errors, continue trying
     }
+
+    // Wait before next attempt (except after last attempt)
+    if (attempt < maxAttempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, interval));
+    }
   }
+
+  // Polling timed out
+  onTimeout?.();
 }

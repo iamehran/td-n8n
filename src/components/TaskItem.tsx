@@ -5,12 +5,13 @@ import type { Task } from '@/lib/types';
 
 interface TaskItemProps {
   task: Task;
+  isEnhancing?: boolean;
   onToggleComplete: (id: string, completed: boolean) => Promise<void>;
   onUpdateTitle: (id: string, title: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
-export default function TaskItem({ task, onToggleComplete, onUpdateTitle, onDelete }: TaskItemProps) {
+export default function TaskItem({ task, isEnhancing, onToggleComplete, onUpdateTitle, onDelete }: TaskItemProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [loading, setLoading] = useState(false);
@@ -94,6 +95,11 @@ export default function TaskItem({ task, onToggleComplete, onUpdateTitle, onDele
           >
             <p className="task-title text-lg sm:text-xl lg:text-2xl break-words leading-relaxed">
               {displayTitle}
+              {isEnhancing && !hasEnhancement && (
+                <span className="ai-enhanced ml-2 text-xs sm:text-sm animate-pulse">
+                  enhancing...
+                </span>
+              )}
               {hasEnhancement && (
                 <span className="ai-enhanced ml-2 text-xs sm:text-sm">
                   AI

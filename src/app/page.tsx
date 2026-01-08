@@ -11,7 +11,7 @@ export default function Home() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(true);
 
-  const { tasks, loading, addTask, toggleComplete, updateTitle, deleteTask } = useTasks(userId);
+  const { tasks, loading, enhancingIds, addTask, toggleComplete, updateTitle, deleteTask } = useTasks(userId);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('todo_user_id');
@@ -94,6 +94,7 @@ export default function Home() {
         <TaskList
           tasks={tasks}
           loading={loading}
+          enhancingIds={enhancingIds}
           onToggleComplete={toggleComplete}
           onUpdateTitle={updateTitle}
           onDelete={deleteTask}

@@ -6,6 +6,7 @@ import TaskItem from './TaskItem';
 interface TaskListProps {
   tasks: Task[];
   loading: boolean;
+  enhancingIds: Set<string>;
   onToggleComplete: (id: string, completed: boolean) => Promise<void>;
   onUpdateTitle: (id: string, title: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
@@ -14,6 +15,7 @@ interface TaskListProps {
 export default function TaskList({
   tasks,
   loading,
+  enhancingIds,
   onToggleComplete,
   onUpdateTitle,
   onDelete,
@@ -54,6 +56,7 @@ export default function TaskList({
             <TaskItem
               key={task.id}
               task={task}
+              isEnhancing={enhancingIds.has(task.id)}
               onToggleComplete={onToggleComplete}
               onUpdateTitle={onUpdateTitle}
               onDelete={onDelete}
@@ -73,6 +76,7 @@ export default function TaskList({
               <TaskItem
                 key={task.id}
                 task={task}
+                isEnhancing={false}
                 onToggleComplete={onToggleComplete}
                 onUpdateTitle={onUpdateTitle}
                 onDelete={onDelete}

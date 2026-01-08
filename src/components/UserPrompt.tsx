@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 interface UserPromptProps {
-  onUserSet: (userId: string, email: string) => void;
+  onUserSet: (userId: string, email: string, phone: string | null) => void;
 }
 
 export default function UserPrompt({ onUserSet }: UserPromptProps) {
@@ -34,7 +34,10 @@ export default function UserPrompt({ onUserSet }: UserPromptProps) {
 
       localStorage.setItem('todo_user_id', data.data.id);
       localStorage.setItem('todo_user_email', data.data.email);
-      onUserSet(data.data.id, data.data.email);
+      if (data.data.phone) {
+        localStorage.setItem('todo_user_phone', data.data.phone);
+      }
+      onUserSet(data.data.id, data.data.email, data.data.phone || null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {

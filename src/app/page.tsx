@@ -30,9 +30,10 @@ export default function Home() {
     setInitializing(false);
   }, []);
 
-  const handleUserSet = useCallback((id: string, email: string) => {
+  const handleUserSet = useCallback((id: string, email: string, phone: string | null) => {
     setUserId(id);
     setUserEmail(email);
+    setUserPhone(phone);
   }, []);
 
   const handleLogout = useCallback(() => {
